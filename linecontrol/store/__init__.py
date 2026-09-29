@@ -4,6 +4,7 @@ from .backup import BackupSummary
 from .filestore import FileStore
 from .keys import (
     KEY_ACID,
+    KEY_CYCLE,
     KEY_EVENTS,
     KEY_GAIN,
     KEY_HOURS,
@@ -22,6 +23,7 @@ __all__ = [
     "BackupSummary",
     "FileStore",
     "KEY_ACID",
+    "KEY_CYCLE",
     "KEY_EVENTS",
     "KEY_GAIN",
     "KEY_HOURS",

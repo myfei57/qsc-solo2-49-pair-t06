@@ -49,6 +49,17 @@ class FileStore:
     def exists(self, key: str) -> bool:
         return self._path(key).exists()
 
+    def delete(self, key: str) -> bool:
+        """Remove a snapshot, returning whether a file was present."""
+
+        path = self._path(key)
+        with self._lock:
+            try:
+                path.unlink()
+            except FileNotFoundError:
+                return False
+        return True
+
     def list(self, prefix: str = "") -> list[str]:
         with self._lock:
             names = sorted(entry.name for entry in self._dir.iterdir() if entry.is_file())

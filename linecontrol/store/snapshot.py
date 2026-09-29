@@ -7,6 +7,7 @@ from typing import TypeVar
 
 from ..domain.records import (
     AcidSnapshot,
+    CycleCheckpoint,
     LatchSnapshot,
     PumpSnapshot,
     RinseSnapshot,
@@ -21,6 +22,7 @@ T = TypeVar("T")
 #: Record classes that can be round-tripped through the snapshot helpers.
 SNAPSHOT_TYPES = (
     AcidSnapshot,
+    CycleCheckpoint,
     LatchSnapshot,
     PumpSnapshot,
     RinseSnapshot,

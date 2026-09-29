@@ -7,6 +7,7 @@ from .phase import Phase
 from .records import (
     AcidSnapshot,
     Confirm,
+    CycleCheckpoint,
     LatchSnapshot,
     PumpSnapshot,
     RinseSnapshot,
@@ -18,6 +19,7 @@ from .records import (
 __all__ = [
     "AcidSnapshot",
     "Confirm",
+    "CycleCheckpoint",
     "Event",
     "EventKind",
     "IllegalTransition",

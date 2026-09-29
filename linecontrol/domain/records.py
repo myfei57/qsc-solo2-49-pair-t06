@@ -4,9 +4,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from .events import utcnow
+
+if TYPE_CHECKING:
+    from ..line.workflow import CycleInput
 
 
 def _stamp(raw: Any) -> datetime:
@@ -169,5 +172,79 @@ class LatchSnapshot:
         return cls(
             interlock=bool(raw.get("interlock", False)),
             alarm=bool(raw.get("alarm", False)),
+            saved=_stamp(raw.get("saved")),
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class CycleCheckpoint:
+    """Progress of a production cycle, persisted so the run can be resumed.
+
+    ``stage`` is the number of stages that have already completed. The next
+    stage the cycle must execute is therefore ``stage`` (zero-based).
+    """
+
+    stage: int = 0
+    coil_id: str = ""
+    target: float = 0.0
+    level: float = 0.0
+    voltage: float = 0.0
+    current: float = 0.0
+    speed: float = 0.0
+    coil_no: int = 0
+    handle: str = ""
+    seams: int = 0
+    saved: datetime = field(default_factory=utcnow)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "stage": self.stage,
+            "coil": self.coil_id,
+            "target": self.target,
+            "level": self.level,
+            "voltage": self.voltage,
+            "current": self.current,
+            "speed": self.speed,
+            "coilNo": self.coil_no,
+            "handle": self.handle,
+            "seams": self.seams,
+            "saved": self.saved.isoformat(),
+        }
+
+    @classmethod
+    def from_input(
+        cls,
+        payload: "CycleInput",
+        coil_no: int,
+        handle: str,
+        stage: int = 0,
+        seams: int = 0,
+    ) -> "CycleCheckpoint":
+        return cls(
+            stage=stage,
+            coil_id=payload.coil_id,
+            target=payload.target,
+            level=payload.level,
+            voltage=payload.voltage,
+            current=payload.current,
+            speed=payload.speed,
+            coil_no=coil_no,
+            handle=handle,
+            seams=seams,
+        )
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, Any]) -> "CycleCheckpoint":
+        return cls(
+            stage=int(raw.get("stage", 0)),
+            coil_id=str(raw.get("coil", "")),
+            target=float(raw.get("target", 0.0)),
+            level=float(raw.get("level", 0.0)),
+            voltage=float(raw.get("voltage", 0.0)),
+            current=float(raw.get("current", 0.0)),
+            speed=float(raw.get("speed", 0.0)),
+            coil_no=int(raw.get("coilNo", 0)),
+            handle=str(raw.get("handle", "")),
+            seams=int(raw.get("seams", 0)),
             saved=_stamp(raw.get("saved")),
         )

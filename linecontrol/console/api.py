@@ -290,10 +290,24 @@ class Api:
         return {"ok": True}
 
     def cycle(self, request: Request) -> dict[str, object]:
+        payload = self._cycle_input(request)
+        self.line.production_cycle(payload)
+        return {"ok": True, "sequence": self.line.sequence_snapshot()}
+
+    def cycle_resume(self, request: Request) -> dict[str, object]:
+        payload = self._cycle_input(request)
+        report = self.line.resume_cycle(payload)
+        return {"ok": True, "resume": report.to_dict(), "sequence": self.line.sequence_snapshot()}
+
+    def cycle_checkpoint(self, request: Request) -> dict[str, object]:
+        checkpoint, found = self.line.load_checkpoint()
+        return {"ok": True, "found": found, "checkpoint": checkpoint.to_dict()}
+
+    def _cycle_input(self, request: Request) -> CycleInput:
         coil_id = request.args.get("coil", "")
         if not coil_id:
             raise ApiParamError("coil", coil_id)
-        payload = CycleInput(
+        return CycleInput(
             coil_id=coil_id,
             target=float_param(request, "target"),
             level=float_param(request, "level"),
@@ -301,5 +315,3 @@ class Api:
             current=float_param(request, "current"),
             speed=float_param(request, "speed"),
         )
-        self.line.production_cycle(payload)
-        return {"ok": True, "sequence": self.line.sequence_snapshot()}

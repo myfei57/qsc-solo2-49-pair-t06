@@ -132,9 +132,29 @@ async function refresh() {
     renderSequence(data.state ? data.state.sequence : null);
     const summary = await loadJSON("/api/audit/summary");
     renderSummary(summary.summary || {});
+    const checkpoint = await loadJSON("/api/cycle/checkpoint");
+    renderCheckpoint(checkpoint);
   } catch (error) {
     console.error(error);
   }
+}
+
+const STAGE_NAMES = [
+  "上卷", "焊接提速", "酸循环", "设定速度", "设定焊接功率", "补焊跟踪", "烘干换卷", "停机",
+];
+
+function renderCheckpoint(data) {
+  const node = document.getElementById("cycle-checkpoint");
+  if (!node) {
+    return;
+  }
+  if (!data.found) {
+    node.textContent = "无中断批次";
+    return;
+  }
+  const cp = data.checkpoint || {};
+  const next = STAGE_NAMES[cp.stage] || "?";
+  node.textContent = "中断于第 " + (cp.stage + 1) + " 步前，续跑从「" + next + "」开始";
 }
 
 async function refreshAudit(kind, limit) {
@@ -159,6 +179,10 @@ const OP_CALLS = {
   "dry-reheat": () => post("/api/dry/reheat"),
   "entry-correct": () => post("/api/entry/correct"),
   "stop": () => post("/api/stop"),
+  "cycle-resume": () => {
+    const form = document.querySelector('form[data-form="cycle"]');
+    return post("/api/cycle/resume", readForm(form));
+  },
   "strip-sag": async () => {
     const data = await loadJSON("/api/strip/sag");
     window.alert("垂度 " + fmt(data.sag, 2) + " mm");

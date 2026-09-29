@@ -142,3 +142,29 @@ def test_sequence_clear_endpoint(client: FlaskClient) -> None:
     client.post("/api/entry/sample?value=1")
     assert client.post("/api/sequence/clear").status_code == 200
     assert client.get("/api/sequence").get_json()["sequence"]["steps"] == []
+
+
+def test_resume_without_a_checkpoint_is_a_conflict(client: FlaskClient) -> None:
+    response = client.post(
+        "/api/cycle/resume",
+        query_string={
+            "coil": "C-1",
+            "target": 90,
+            "level": 4.5,
+            "voltage": 24,
+            "current": 300,
+            "speed": 1.4,
+        },
+    )
+    assert response.status_code == 409
+    body = response.get_json()
+    assert body["ok"] is False
+    assert body["detail"]["code"] == "no-checkpoint"
+
+
+def test_checkpoint_endpoint_reports_a_finished_cycle(client: FlaskClient) -> None:
+    before = client.get("/api/cycle/checkpoint").get_json()
+    assert before["found"] is False
+    client.post("/api/cycle?coil=C-1&target=90&level=4.5&voltage=24&current=300&speed=1.4")
+    after = client.get("/api/cycle/checkpoint").get_json()
+    assert after["found"] is False

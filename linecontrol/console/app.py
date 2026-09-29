@@ -66,6 +66,8 @@ def _route_table(api: Api) -> tuple[tuple[str, str, Handler], ...]:
         ("/api/strip/eta", "GET", api.strip_eta),
         ("/api/stop", "POST", api.stop),
         ("/api/cycle", "POST", api.cycle),
+        ("/api/cycle/resume", "POST", api.cycle_resume),
+        ("/api/cycle/checkpoint", "GET", api.cycle_checkpoint),
     )
 
 
